@@ -35,8 +35,8 @@ This project is licensed under the [MIT License](LICENSE).
 ---
 <div align="center">
   <h1>Example</h1>
-  <img src="https://raw.githubusercontent.com/popcord/VisionCraft-Checker/main/image/screen1.png" />
-  <img src="https://raw.githubusercontent.com/popcord/VisionCraft-Checker/main/image/screen2.png" />
+  <img src="https://raw.githubusercontent.com/popcord/VisionCraft-Checker/v1.1/image/screen1.png" />
+  <img src="https://raw.githubusercontent.com/popcord/VisionCraft-Checker/v1.1/image/screen2.png" />
 </div>
 
 ---
