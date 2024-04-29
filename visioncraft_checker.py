@@ -51,7 +51,7 @@ def main(type=None):
         os.system("cls || clear")
         # Prompt user for selection
         if type is None:
-            TO_CHECK = input("What do you want to check?\n1 - Models/Checkpoints\n2 - LORAs\n3 - Samplers\n4 - All\n>>> ")
+            TO_CHECK = input("What do you want to check?\n1 - Models/Checkpoints\n2 - LORAs\n3 - Samplers\n4 - llm models\n\n5 - All\n>>> ")
         else:
             TO_CHECK = type
         
@@ -72,10 +72,15 @@ def main(type=None):
             type= "samplers"
             break
         elif TO_CHECK == "4":
+            url = "https://visioncraft.top/models-llm"
+            filename = "llm_checker.json"  # Update JSON filename for llm models
+            type= "llm models"
+            break
+        elif TO_CHECK == "5":
             check_all()
             return
         else:
-            print("Invalid input. Please select only 1, 2, 3, or 4")
+            print("Invalid input. Please select only 1, 2, 3, 4 or 5")
             time.sleep(3)
 
     response_checker = fetch_checker(url)
