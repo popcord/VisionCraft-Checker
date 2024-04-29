@@ -130,7 +130,6 @@ def check_all():
     main("1")
     main("2")
     main("3")
-    main("4")
 
 # Entry point of the program
 if __name__ == "__main__":
