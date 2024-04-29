@@ -1,6 +1,6 @@
 # VisionCraft Checker
 
-This script checks for new and unknown (deleted) sd/sdxl models, loras and samplers from [VisionCraft](https://t.me/visioncraft_channel) and updates a JSON file accordingly to save data.
+This script checks for new and unknown (deleted) sd/sdxl models, loras, samplers and **llm models** from [VisionCraft](https://t.me/visioncraft_channel) and updates a JSON file accordingly to save data.
 
 ## Usage
 
