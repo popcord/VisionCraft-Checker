@@ -28,8 +28,11 @@ def fetch_data(url):
 # Function to load existing data from a file
 def load_data(filename):
     try:
-        with open(filename, "r", encoding='utf-8') as file:
-            return json.load(file)
+        if os.path.isfile(filename):
+            with open(filename, "r", encoding='utf-8') as file:
+                return json.load(file)
+        else:
+            return[]
     except FileNotFoundError:
         return []
 
@@ -65,10 +68,10 @@ def check_file(filename, data, created=False, no=False):
     print(message)
 
 # Main function
-def main(type=None):
+def main(user_type=None):
     while True:
         os.system("cls || clear")
-        if type is None:
+        if user_type is None:
             TO_CHECK = input(
                 "What do you want to check?\n"
                 "1 - SD1.5 Models\n"
@@ -82,7 +85,7 @@ def main(type=None):
                 "9 - All\n>>> "
             )
         else:
-            TO_CHECK = type
+            TO_CHECK = user_type
 
 
         if TO_CHECK == "9":
@@ -123,13 +126,12 @@ def main(type=None):
         else:
             if os.path.isfile(filename) :
                 print(f"No unknown/deleted {item_type} found.\n{'#' * 25}")
-                break
             else:
                 print('#' * 25)
                 
 
         if new_items or missing_items:
-            if type != "All":
+            if user_type != "All":
                 while True:
                     value = input("Do you want to update the list [y/n]? ").lower()
                     if os.path.isfile(filename):
@@ -154,7 +156,6 @@ def main(type=None):
 
 # Function to check all types and update/create all files
 def check_all():
-    
     for key, (url, filename, useless) in urls.items():
         print(f"Checking {filename}...")
         response_data = fetch_data(url)
