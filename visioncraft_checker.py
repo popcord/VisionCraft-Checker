@@ -1,136 +1,174 @@
-# Import necessary libraries
-import requests, json, os, time
+import requests
+import json
+import os
+import time
+
+# List of available endpoints to check with the filename for them
+urls = {
+            "1": ("https://visioncraft.top/sd/models-sd", "SD1-5_models_checker.json", "models"),
+            "2": ("https://visioncraft.top/sd/models-sdxl", "SDXL_models_checker.json", "models"),
+            "3": ("https://visioncraft.top/sd/models-sd3", "SD3_models_checker.json", "models"),
+            "4": ("https://visioncraft.top/sd/loras-sd", "SD1-5_loras_checker.json", "loras"),
+            "5": ("https://visioncraft.top/sd/loras-sdxl", "SDXL_loras_checker.json", "loras"),
+            "6": ("https://visioncraft.top/sd/loras-sd3", "SD3_loras_checker.json", "loras"),
+            "7": ("https://visioncraft.top/sd/samplers", "samplers_checker.json", "samplers"),
+            "8": ("https://visioncraft.top/models-llm", "llm_checker.json", "llm models"),
+        }
 
 # Function to fetch data from a URL
-def fetch_checker(url):
-    response = requests.get(url)
-    if response.status_code == 200:
+def fetch_data(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
         return response.json()
-    else:
-        print("Failed to fetch data from the URL. Status code:", response.status_code)
+    except requests.RequestException as e:
+        print(f"Failed to fetch data from {url}. Error: {e}")
         return None
 
 # Function to load existing data from a file
-def load_existing_checker(filename):
+def load_data(filename):
     try:
         with open(filename, "r", encoding='utf-8') as file:
-            data = file.read()
-            if data:
-                return json.loads(data)
-            else:
-                return []
+            return json.load(file)
     except FileNotFoundError:
         return []
 
 # Function to save data to a file
-def save_checker(filename, checker):
+def save_data(filename, data):
     with open(filename, "w", encoding='utf-8') as file:
-        list = []
-        for model in sorted(checker, key=lambda x: x.lower()):
-            list.append(model)
-        json.dump(list, file, indent=4, ensure_ascii=False)
+        json.dump(sorted(data, key=lambda x: x.lower()), file, indent=4, ensure_ascii=False)
 
 # Function to check for new data
-def check_new_checker(new_checker, existing_checker):
-    new_checker = [model for model in new_checker if model.lower() not in map(str.lower, existing_checker)]
-    return new_checker
+def find_new_items(new_items, existing_items):
+    existing_lower = set(item.lower() for item in existing_items)
+    return [item for item in new_items if item.lower() not in existing_lower]
 
 # Function to find missing data
-def find_missing_checker(response_checker, existing_checker):
-    missing_checker = [model for model in existing_checker if model.lower() not in map(str.lower, response_checker)]
-    return missing_checker
+def find_missing_items(response_items, existing_items):
+    response_lower = set(item.lower() for item in response_items)
+    return [item for item in existing_items if item.lower() not in response_lower]
 
-# Function to update the data file
-def update_checker_file(filename, checker):
-    save_checker(filename, checker)
-    print("The list has been successfully updated.")
+# Function to update/create the data file
+def check_file(filename, data, created=False, no=False):
+    name = filename.replace('checker.json', '').replace('_',' ')
+    if created :
+        msg = "updated"
+    else:
+        msg = "created"
+
+    
+    if no :
+        message = f"The list for {name}hasn't been {msg}."
+    else:
+        message = f"The list for {name}has been successfully {msg}."
+        save_data(filename, data)
+    print(message)
 
 # Main function
 def main(type=None):
     while True:
         os.system("cls || clear")
-        # Prompt user for selection
         if type is None:
-            TO_CHECK = input("What do you want to check?\n1 - Models/Checkpoints\n2 - LORAs\n3 - Samplers\n4 - llm models\n\n5 - All\n>>> ")
+            TO_CHECK = input(
+                "What do you want to check?\n"
+                "1 - SD1.5 Models\n"
+                "2 - SDXL Models\n"
+                "3 - SD3 Models\n-----\n"
+                "4 - SD 1.5 LORAs\n"
+                "5 - SDXL LORAs\n"
+                "6 - SD3 LORAs\n-----\n"
+                "7 - Samplers\n"
+                "8 - llm models\n\n"
+                "9 - All\n>>> "
+            )
         else:
             TO_CHECK = type
-        
-        # Process user input
-        if TO_CHECK == "1":
-            url = "https://visioncraft.top/sd/models"
-            filename = "models_checker.json"  # Update JSON filename for models/checkpoints
-            type = "models"
-            break
-        elif TO_CHECK == "2":
-            url = "https://visioncraft.top/sd/loras"
-            filename = "loras_checker.json"  # Update JSON filename for LORAs
-            type= "loras"
-            break
-        elif TO_CHECK == "3":
-            url = "https://visioncraft.top/sd/samplers"
-            filename = "samplers_checker.json"  # Update JSON filename for Samplers
-            type= "samplers"
-            break
-        elif TO_CHECK == "4":
-            url = "https://visioncraft.top/models-llm"
-            filename = "llm_checker.json"  # Update JSON filename for llm models
-            type= "llm models"
-            break
-        elif TO_CHECK == "5":
+
+
+        if TO_CHECK == "9":
             check_all()
             return
-        else:
-            print("Invalid input. Please select only 1, 2, 3, 4 or 5")
+
+        if TO_CHECK not in urls:
+            print("Invalid input. Please select a valid option.")
             time.sleep(3)
+            continue
 
-    response_checker = fetch_checker(url)
-    if response_checker is None:
-        return
+        url, filename, item_type = urls[TO_CHECK]
+        response_data = fetch_data(url)
+        if response_data is None:
+            return
 
-    existing_checker = load_existing_checker(filename)
+        existing_data = load_data(filename)
 
-    new_checker = check_new_checker(response_checker, existing_checker)
-    missing_checker = find_missing_checker(response_checker, existing_checker)
+        new_items = find_new_items(response_data, existing_data)
+        missing_items = find_missing_items(response_data, existing_data)
 
-    print(f"Registered {type}:", len(existing_checker), "\n" + "#" * 25)
+        print(f"Registered {item_type}: {len(existing_data)}\n{'#' * 25}")
 
-    if new_checker:
-        print(f"New {type} found ({len(new_checker)}):")
-        for model in sorted(new_checker, key=lambda x: x.lower()):
-            print("-", model)
-        print("-" * 25)
-    else:
-        print(f"No new {type} found.")
-        print("-" * 25)
+        if new_items:
+            print(f"New {item_type} found ({len(new_items)}):")
+            for item in sorted(new_items, key=lambda x: x.lower()):
+                print(f"- {item}")
+            print('-' * 25)
+        else:
+            print(f"No new {item_type} found.")
+            print('-' * 25)
 
-    if missing_checker:
-        print(f"New unknown/deleted {type} found ({len(missing_checker)}):")
-        for model in missing_checker:
-            print("-", model)
-        print("#" * 25)
-    else:
-        print(f"No unknown/deleted {type} found.\n" + "#" * 25)
-
-    if new_checker or missing_checker:
-        while True:
-            value = input("Do you want to update the list [y/n]? ").lower()
-            if value in ("y", "yes"):
-                update_checker_file(filename, response_checker)
-                break
-            elif value in ("n", "no"):
-                print("List not updated.")
+        if missing_items:
+            print(f"Unknown/deleted {item_type} found ({len(missing_items)}):")
+            for item in missing_items:
+                print(f"- {item}")
+            print('#' * 25)
+        else:
+            if os.path.isfile(filename) :
+                print(f"No unknown/deleted {item_type} found.\n{'#' * 25}")
                 break
             else:
-                print("Invalid input\n" + "*" * 20)
+                print('#' * 25)
+                
 
-    input("Press any key to exit...")
+        if new_items or missing_items:
+            if type != "All":
+                while True:
+                    value = input("Do you want to update the list [y/n]? ").lower()
+                    if os.path.isfile(filename):
+                        created = True
+                    else:
+                        created = False
+                        
+                    if value in ("y", "yes"):
+                        check_file(filename, response_data, created)
+                        break
+                    elif value in ("n", "no"):
+                        check_file(filename, response_data, created, no=True)
+                        break
+                    else:
+                        print("Invalid input\n" + "*" * 20)
+                break
+            
+        else:
+            break
 
-# Function to check all types
+    
+
+# Function to check all types and update/create all files
 def check_all():
-    main("1")
-    main("2")
-    main("3")
+    
+    for key, (url, filename, useless) in urls.items():
+        print(f"Checking {filename}...")
+        response_data = fetch_data(url)
+        if response_data:
+            save_data(filename, response_data)
+            if os.path.isfile(filename):
+                print(f"Updated {filename}.")
+            else:
+                print(f"Created {filename}.")
+        else:
+            print(f"Failed to fetch data for {filename}.")
+    print("all datas are saved")
 
 # Entry point of the program
 if __name__ == "__main__":
     main()
+    input("Press any key to exit...")
